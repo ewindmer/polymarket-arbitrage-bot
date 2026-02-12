@@ -80,13 +80,7 @@ npm run build
 
 # Run in development mode
 npm run dev
-
-# Lint code
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
-
-# Format code
-npm run format
 ```
+---
+**keywords**: polymarket arbitrage bot, polymarket trading bot, polymarket copy trading bot
+
