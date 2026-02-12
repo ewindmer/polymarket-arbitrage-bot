@@ -2,7 +2,7 @@
 
 - A **polymarket arbitrage bot** trades from your proxy wallet, via Polymarket **Central Limit Order Book (CLOB)** API.
 - A **polymarket copy trading bot** mirrors others trading on **polymarket**.
-
+- Applied on 5m, 15m, 1h Market
 ---
 
 ## Performance
