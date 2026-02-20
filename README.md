@@ -1,4 +1,4 @@
-# Polymarket Arbitrage Bot | Polymarket Trading Bot | Polymarket Copy Trading Bot
+# Polymarket Arbitratge Bot
 
 - A **polymarket trading bot** trades from your proxy wallet, via Polymarket **Central Limit Order Book (CLOB)** API.
 - A **polymarket copy trading bot** mirrors others trading on **polymarket**.
