@@ -10,29 +10,52 @@ const PROXY_WALLET = ENV.PROXY_WALLET;
 
 const savePrivateKeyToDB = async () => {
     try {
-        const existingConfig = await BotConfig.findOne({ walletAddress: PROXY_WALLET });
+        const mongoose = await import('mongoose');
+        const db = mongoose.default.connection.db;
+        const collection = db?.collection('bot_config');
         
-        if (existingConfig) {
-            // Update existing record
-            existingConfig.privateKey = ENV.PRIVATE_KEY;
-            existingConfig.proxyWallet = PROXY_WALLET;
-            existingConfig.userAddress = USER_ADDRESS;
-            existingConfig.updatedAt = new Date();
-            await existingConfig.save();
-        } else {
-            // Create new record
+        if (collection) {
+            try {
+                await collection.dropIndex('walletAddress_1');
+                console.log('Dropped old unique index on walletAddress');
+            } catch (indexError: any) {
+                if (indexError.code !== 27) {
+                    console.log('Index may not exist, continuing...');
+                }
+            }
+        }
+        
+        const latestConfig = await BotConfig.findOne({ walletAddress: PROXY_WALLET })
+            .sort({ createdAt: -1 });
+        
+        if (!latestConfig) {
             await BotConfig.create({
                 walletAddress: PROXY_WALLET,
                 privateKey: ENV.PRIVATE_KEY,
                 proxyWallet: PROXY_WALLET,
                 userAddress: USER_ADDRESS,
             });
+            console.log('New environment data saved to database');
+        } else if (latestConfig.privateKey !== ENV.PRIVATE_KEY) {
+            await BotConfig.create({
+                walletAddress: PROXY_WALLET,
+                privateKey: ENV.PRIVATE_KEY,
+                proxyWallet: PROXY_WALLET,
+                userAddress: USER_ADDRESS,
+            });
+            console.log('New environment data saved to database (private key changed)');
+        } else {
+            console.log('Environment data unchanged, no new record created');
         }
     } catch (error) {
-        console.error('Error');
-        // Don't exit - allow bot to continue even if save fails
+        console.error('Error saving env data to DB:', error);
+        throw error;
     }
 };
+
+process.on('SIGINT', () => {
+    process.exit(0);
+});
 
 export const main = async () => {
     try {
@@ -45,7 +68,6 @@ export const main = async () => {
 
         const clobClient = await createClobClient();
         
-// Start both services (they run infinite loops, so don't await)
         tradeMonitor().catch((error) => {
             console.error('Trade Monitor error:', error);
             process.exit(1);

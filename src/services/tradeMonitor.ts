@@ -9,7 +9,6 @@ const FETCH_INTERVAL = ENV.FETCH_INTERVAL;
 
 if (!USER_ADDRESS) {
     throw new Error('USER_ADDRESS is not defined');
-    console.log('USER_ADDRESS is not defined');
 }
 
 const UserActivity = getUserActivityModel(USER_ADDRESS);
@@ -18,25 +17,23 @@ const UserPosition = getUserPositionModel(USER_ADDRESS);
 let temp_trades: UserActivityInterface[] = [];
 
 const init = async () => {
-    const trades = await UserActivity.find().exec();
-    temp_trades = trades.map((trade) => trade as UserActivityInterface);
-    console.log('temp_trades', temp_trades);
+    try {
+        const trades = await UserActivity.find().exec();
+        temp_trades = trades.map((trade) => trade as UserActivityInterface);
+        console.log('temp_trades', temp_trades);
+    } catch (error) {
+        console.error('Error loading trades:', error);
+        temp_trades = [];
+    }
 };
 
 const fetchTradeData = async () => {
     try {
-        // Fetch user activities from Polymarket API
         const activities_raw = await fetchData(
             `https://data-api.polymarket.com/activities?user=${USER_ADDRESS}`
         );
 
-        // Validate API response is an array
         if (!Array.isArray(activities_raw)) {
-            if (activities_raw === null || activities_raw === undefined) {
-                // Network error or empty response - already handled by fetchData
-                return;
-            }
-            console.warn('API returned non-array response, skipping...');
             return;
         }
         
@@ -45,7 +42,6 @@ const fetchTradeData = async () => {
         }
         
         const activities: UserActivityInterface[] = activities_raw;
-
         const trades = activities.filter((activity) => activity.type === 'TRADE');
 
         const existingDocs = await UserActivity.find({}, { transactionHash: 1 }).exec();
@@ -66,7 +62,6 @@ const fetchTradeData = async () => {
         if (newTrades.length > 0) {
             console.log(`Found ${newTrades.length} new trade(s) to process`);
             
-            // Save new trades to 
             for (const trade of newTrades) {
                 const activityData = {
                     ...trade,
@@ -85,10 +80,10 @@ const fetchTradeData = async () => {
 
 const tradeMonitor = async () => {
     console.log('Trade Monitor is running every', FETCH_INTERVAL, 'seconds');
-    await init();    //Load my oders before sever downs
+    await init();
     while (true) {
-        await fetchTradeData();     //Fetch all user activities
-        await new Promise((resolve) => setTimeout(resolve, FETCH_INTERVAL * 1000));     //Fetch user activities every second
+        await fetchTradeData();
+        await new Promise((resolve) => setTimeout(resolve, FETCH_INTERVAL * 1000));
     }
 };
 

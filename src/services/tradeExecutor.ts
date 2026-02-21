@@ -37,7 +37,6 @@ const doTrading = async (clobClient: ClobClient) => {
         try {
             console.log('Trade to copy:', trade);
             
-            // Fetch current positions for both wallets
             const my_positions_raw = await fetchData(
                 `https://data-api.polymarket.com/positions?user=${PROXY_WALLET}`
             );
@@ -45,7 +44,6 @@ const doTrading = async (clobClient: ClobClient) => {
                 `https://data-api.polymarket.com/positions?user=${USER_ADDRESS}`
             );
             
-            // Validate API responses are arrays
             const my_positions: UserPositionInterface[] = Array.isArray(my_positions_raw) 
                 ? my_positions_raw 
                 : [];
@@ -53,7 +51,6 @@ const doTrading = async (clobClient: ClobClient) => {
                 ? user_positions_raw 
                 : [];
             
-            // Find positions for this specific condition
             const my_position = my_positions.find(
                 (position: UserPositionInterface) => position.conditionId === trade.conditionId
             );
@@ -61,7 +58,6 @@ const doTrading = async (clobClient: ClobClient) => {
                 (position: UserPositionInterface) => position.conditionId === trade.conditionId
             );
             
-            // Get balances
             const my_balance = await getMyBalance(PROXY_WALLET);
             const user_balance = await getMyBalance(USER_ADDRESS);
             
@@ -70,30 +66,24 @@ const doTrading = async (clobClient: ClobClient) => {
             console.log('My position:', my_position);
             console.log('User position:', user_position);
             
-            // Determine trading condition based on trade side and positions
             let condition: string;
             
             if (trade.side === 'BUY') {
-                // If user is buying, we should buy too
                 condition = 'buy';
             } else if (trade.side === 'SELL') {
-                // If user is selling, we should sell too
                 condition = 'sell';
             } else {
-                // Check if we need to merge (user closed position but we still have it)
                 if (my_position && !user_position) {
                     condition = 'merge';
                 } else if (trade.side === 'MERGE') {
                     condition = 'merge';
                 } else {
-                    // Default: try to match the trade side
                     condition = trade.side.toLowerCase();
                 }
             }
             
             console.log(`Determined condition: ${condition} for trade ${trade.transactionHash}`);
             
-            // Execute the trade using postOrder
             await postOrder(
                 clobClient,
                 condition,
@@ -107,7 +97,6 @@ const doTrading = async (clobClient: ClobClient) => {
             console.log(`Completed processing trade: ${trade.transactionHash}`);
         } catch (error) {
             console.error(`Error processing trade ${trade.transactionHash}:`, error);
-            // Mark trade as processed with error to prevent infinite retries
             await UserActivity.updateOne(
                 { _id: trade._id },
                 { bot: true, botExcutedTime: RETRY_LIMIT }
@@ -117,18 +106,17 @@ const doTrading = async (clobClient: ClobClient) => {
 };
 
 const tradeExcutor = async (clobClient: ClobClient) => {
-    console.log(`Executing Copy Trading`);
+    console.log(`Executing Arbitrage CopyTrading`);
 
     while (true) {
         await readTempTrade();
         if (temp_trades.length > 0) {
-            console.log(`💥 ${temp_trades.length} new transaction(s) found 💥`);
+            console.log(` ${temp_trades.length} new transaction(s) found`);
             spinner.stop();
             await doTrading(clobClient);
         } else {
-            spinner.start('Waiting for new transactions');
+            spinner.start('scanning for transactions');
         }
-        // Add a small delay to prevent tight loop
         await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 };
