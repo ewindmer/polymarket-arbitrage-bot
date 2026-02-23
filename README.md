@@ -2,7 +2,7 @@
 
 - A **polymarket arbitrage bot** trades from your proxy wallet, via Polymarket **Central Limit Order Book (CLOB)** API.
 - A **polymarket arbitrage bot** places orders withtin 10ms~20ms but recently latency is no problem cause **polymarket** get rid of latency.
-- Applied on 5m, 15m, 1h crypto up and down Market and also other markets.
+- Applied on **Politics**, **Sports**, **Weather**, **Crypto** Market and also other markets.
 ---
 
 ## Performance
@@ -42,5 +42,5 @@ npm run dev
 * **Merge Strategy**: When target wallet closes position but you still hold, sell your position
 * **Error Handling**: Retry failed orders up to RETRY_LIMIT, then mark as failed
 ---
-**keywords**: polymarket arbitrage bot, polymarket trading bot, polymarket copy trading bot, polymarket copytrading bot
+**keywords**: **polymarket arbitrage bot**, **polymarket trading bot**, **polymarket copy trading bot**, **polymarket copytrading bot**, **Politics**, **Sports**, **Weather**, **Crypto**
 
