@@ -10,8 +10,6 @@
 
 <img width="489" height="231" alt="image" src="https://github.com/user-attachments/assets/fb4f32b6-d2f4-458f-8246-f97997d8f13d" />
 
-https://polymarket.com/@kafwhsd?tab=positions
-
 ---
 
 ### I recommend https://tradingvps.io/  for **polymarekt arbitrage bot** and other **trading bot**.
